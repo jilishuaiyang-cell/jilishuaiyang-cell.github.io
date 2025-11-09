@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCP-CN-7342 | 异常现象调查与收容报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0f0f0f;
+            color: #e0e0e0;
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-image: url('https://picsum.photos/id/1074/1920/1080'), linear-gradient(rgba(0,0,0,0.95), rgba(10,10,10,0.95));
+            background-blend-mode: overlay;
+            background-attachment: fixed;
+            background-size: cover;
+            line-height: 1.8;
+            font-size: 0.98rem;
+            padding: 1.5rem 0;
+        }
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        /* 头部样式 */
+        .header {
+            background: #141414;
+            border: 1px solid #ff4400;
+            border-radius: 4px;
+            padding: 1.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 20px rgba(255,68,0,0.1);
+        }
+        .header h1 {
+            color: #ff4400;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border-bottom: 1px dashed #ff6622;
+            padding-bottom: 0.8rem;
+        }
+        .doc-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            color: #ffaa88;
+            font-size: 0.85rem;
+        }
+        .doc-info span {
+            background: #1a1a1a;
+            padding: 0.4rem 0.8rem;
+            border-radius: 3px;
+            border: 1px solid #333;
+        }
+        /* 访问权限证明 */
+        .access-declare {
+            background: #141414;
+            border: 1px solid #ff4400;
+            border-radius: 4px;
+            padding: 1.2rem;
+            margin: 1.5rem auto;
+            max-width: 900px;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        .access-declare strong {
+            color: #ff4400;
+            text-decoration: underline;
+        }
+        /* 表格样式 */
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: #141414;
+            border: 1px solid #333;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+        .summary-table th, .summary-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        .summary-table th {
+            background: #1a1a1a;
+            color: #ffaa88;
+            width: 28%;
+            font-weight: bold;
+        }
+        .summary-table td {
+            color: #d0d0d0;
+        }
+        .summary-table tr:last-child th, .summary-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* 章节样式 */
+        .section {
+            background: #141414;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+        .section-title {
+            color: #ff4400;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px dashed #ff6622;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+        }
+        .section-title::before {
+            content: '▌';
+            margin-right: 0.8rem;
+            color: #ff4400;
+        }
+        .subsection-title {
+            color: #ffaa88;
+            font-size: 1.05rem;
+            margin: 1.5rem 0 0.8rem;
+            padding-left: 0.6rem;
+            border-left: 3px solid #ff4400;
+        }
+        .section-content {
+            color: #d0d0d0;
+            line-height: 1.8;
+        }
+        .list-item {
+            margin-bottom: 1.2rem;
+            padding-left: 1.8rem;
+            position: relative;
+        }
+        .list-item::before {
+            content: '•';
+            color: #ff4400;
+            position: absolute;
+            left: 0.5rem;
+            font-weight: bold;
+        }
+        /* 谣言模块 */
+        .rumor-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 1.2rem;
+            margin: 1.2rem 0;
+            border-radius: 4px;
+        }
+        .rumor-item {
+            margin-bottom: 1.2rem;
+            padding-left: 1.2rem;
+            border-left: 2px solid #ff4400;
+        }
+        .rumor-item p {
+            margin-bottom: 0.6rem;
+        }
+        .rumor-explain {
+            color: #888;
+            font-size: 0.88rem;
+            line-height: 1.7;
+            background: #1f1f1f;
+            padding: 0.8rem;
+            border-radius: 3px;
+            margin-top: 0.5rem;
+        }
+        /* 底部声明 */
+        .disclaimer {
+            text-align: left;
+            color: #888;
+            font-size: 0.88rem;
+            margin-top: 2.5rem;
+            padding: 1.2rem;
+            background: #141414;
+            border: 1px solid #333;
+            border-radius: 4px;
+            line-height: 1.8;
+        }
+        .disclaimer strong {
+            color: #ff4400;
+        }
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            .section {
+                padding: 1.5rem;
+            }
+            .summary-table th, .summary-table td {
+                padding: 0.8rem 0.6rem;
+            }
+            .summary-table th {
+                width: 35%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 文档头部 -->
+        <div class="header">
+            <h1>SCP-CN-7342 异常现象调查与收容报告</h1>
+            <div class="doc-info">
+                <span>文档等级：密钥公开级</span>
+                <span>访问权限：持有内部人员分享链接即可浏览（链接格式：https://scp-cn-7342.site/[随机16位字母数字组合]）</span>
+                <span>文档版本：v13.0 [最终完整版]</span>
+                <span>最后更新：2025-07-05 16:00:00</span>
+                <span>加密校验码：SCPCN-7342-20250705-1600</span>
+                <span>数据完整性校验：100%</span>
+            </div>
+        </div>
+
+        <!-- 访问权限证明 -->
+        <div class="access-declare">
+            <strong>访问权限证明：</strong>本调查记录网页采用基金会“密钥公开”访问机制，无需额外身份验证、口令输入或权限审批流程。任何持有基金会内部人员分享的专属访问链接的用户，均可直接完整浏览文档全部内容（含文字描述、数据参数、管控措施及补充说明）。文档已通过Site-CN-59服务器三重加密校验，链接生成权限仅开放给Site-CN-59核心工作人员及本项目调查团队成员，传播范围严格限定于基金会授权圈层，外部人员无任何合法途径获取访问链接，风险等级评定为A级可控状态。
+        </div>
+
+        <!-- 文档概要表格 -->
+        <table class="summary-table">
+            <tr>
+                <<th>项目编号</</th>
+                <td>SCP-CN-7342</td>
+            </tr>
+            <tr>
+                <<th>项目等级</</th>
+                <td>EUCLID（异常特性长期稳定，无主动攻击人类的行为倾向，但存在不可预测的精神干扰风险，长期接触可能导致情绪低落、睡眠障碍等轻度心理异常，未发现严重生理伤害案例）</td>
+            </tr>
+            <tr>
+                <<th>首次监测时间</</th>
+                <td>1998-09-01 08:00（海南省三亚市吉阳区落笔洞路176号学校建校当日，基金会同步完成首批潜伏人员部署、监测设备安装及网络搭建，实现异常现象实时监测）</td>
+            </tr>
+            <tr>
+                <<th>首次异常记录</</th>
+                <td>2000-03-12 02:17，西教学楼4楼走廊监测设备首次捕捉到不明来源的高跟鞋脚步声，期间无人员活动记录，排除人为因素</td>
+            </tr>
+            <tr>
+                <<th>正式归档时间</</th>
+                <td>2025-05-28 15:30，经Site-CN-59异常项目审核委员会3轮评审，确认项目数据完整、管控措施有效，完成正式归档流程</td>
+            </tr>
+            <tr>
+                <<th>负责站点</</th>
+                <td>Site-CN-59（亚太地区重点异常监测与收容站点，位于中国境内某隐蔽坐标，配备专业人员及全套监测、分析、收容设备）</td>
+            </tr>
+            <tr>
+                <<th>核心调查团队</</th>
+                <td>
+                    主要调查员：李47（mtf-九尾狐 潜伏侦查员，负责异常现象现场观测、核心数据采集及与站点的加密通信）<br>
+                    辅助调查员：张39（学校后勤维修人员身份伪装，为基金会早期派遣的潜伏人员，属在校老员工，负责监测设备日常维护、数据初步整理及物资补给对接）<br>
+                    联络人员：陈56（与李47同期入校，学校数学教师身份伪装，负责潜伏人员与Site-CN-59的线下对接、信息传递）
+                </td>
+            </tr>
+        </table>
+
+        <!-- 收容与管控措施章节 -->
+        <div class="section">
+            <h2 class="section-title">1. 收容与管控措施</h2>
+            <div class="section-content">
+                <h3 class="subsection-title">1.1 空间管控与异常屏蔽</h3>
+                <div class="list-item">西教学楼4楼维持正常教学使用状态，无任何封闭或限制进入措施。该楼层含3间标准教室、2间教师办公室及1条长45米走廊，日常用于高二、高三年级教学，日均人流量约300人次。天花板内隐蔽部署3台低功率声波干扰设备（伪装为消防报警器），每日22:00-次日04:00异常高发时段自动启动，输出补偿声波，将异常声音强度压制在30分贝以下，避免夜间留校人员察觉。</div>
+                <div class="list-item">教学楼天台（5楼顶部，面积约120平方米）、东侧老榕树周边15米范围，部署隐形电子围栏，无物理实体，仅授权人员可通过专属加密终端输入动态解锁码解锁。普通人员靠近时会产生“方向迷失”“莫名烦躁”等短暂体感，自然远离该区域。</div>
+
+                <h3 class="subsection-title">1.2 环境与物质异常处理</h3>
+                <div class="list-item">满月夜（农历每月十五前后3天）19:00-次日06:00，老榕树周边部署4台低频声波中和装置（伪装为景观灯），自动启动后输出低频声波，与异常嗡鸣形成抵消，将声波压制在10分贝以下，避免人员情绪波动或生理不适。</div>
+                <div class="list-item">班主任每日早自习前，向各班级黑板擦的布上均匀喷洒基金会特制辅助清除药剂（透明无气味），随后安排学生日常擦黑板。该药剂可强化清除异常书写痕迹，对人体无副作用，陈56每日抽查黑板清洁情况，确保无异常残留。</div>
+
+                <h3 class="subsection-title">1.3 设备与人员部署</h3>
+                <div class="list-item">3栋宿舍楼各楼层楼梯间插座内，隐蔽安装2台异常信号记录仪（伪装为插座面板），24小时采集周边10米内电磁、声波异常数据，支持7天循环存储，张39（在校老员工）每周三放学后以“电路检修”为由采集数据并上传至基金会加密服务器。</div>
+                <div class="list-item">校园全域部署8台电磁异常干扰装置（伪装为通信基站信号增强器），2024年10月完成安装调试，用于抑制异常能量扩散。受装置影响，校园网络出现间歇性卡顿，对外解释为“运营商线路维护”。</div>
+                <div class="list-item">潜伏人员均以正常身份在校活动，仅负责监测记录，不主动接触异常，每周通过加密校园网络向Site-CN-59提交报告。基金会自1998年起已先后派遣7批潜伏人员（教师、学生、后勤），张39为早期派遣的后勤类潜伏人员，目前以在校老员工身份持续开展工作，全程监控异常活动，未采取任何公开干预操作。</div>
+
+                <h3 class="subsection-title">1.4 特殊时间安排</h3>
+                <div class="list-item">基金会高层通过外交渠道协调当地教育局，推动该校执行“上12天休2天”的特殊作息计划，对外解释为“提升教学质量的强化训练安排”，实际目的为延长潜伏人员在校监测时间，覆盖更多异常高发时段，提升数据采集效率。</div>
+
+                <h3 class="subsection-title">1.5 人员动态补充</h3>
+                <div class="list-item">对外公开信息显示，李47将于2025年11月调至“海南鑫城美术培训中心”进行专项培养（幌子）；实际情况为李47已按基金会指令临时撤离潜伏点，返回总部参与SCP-CN-7342项目专项会议，无人员交接安排，会议结束后将立即返回原潜伏岗位，继续执行监测任务。张39因属在校老员工身份，潜伏资历深厚且未暴露风险，维持现有岗位不变。</div>
+            </div>
+        </div>
+
+        <!-- 项目描述章节 -->
+        <div class="section">
+            <h2 class="section-title">2. 项目描述</h2>
+            <div class="section-content">
+                <p>SCP-CN-7342是集中发生于海南省三亚市吉阳区落笔洞路176号学校的超自然异常现象集合，无主动攻击性，但存在不可预测的精神干扰风险，异常表现具有明确时间、空间规律性，基金会仅进行监测记录，未实施任何公开可见操作：</p>
+
+                <h3 class="subsection-title">2.1 空间异常（高频发生）</h3>
+                <div class="list-item">活动时间：每日22:00-次日04:00</div>
+                <div class="list-item">活动区域：西教学楼4楼走廊</div>
+                <div class="list-item">异常表现：出现女性高跟鞋脚步声、粉笔书写黑板声，声学设备可完整记录，但无正常空气振动特征，监控及红外设备无法捕捉声源位置，推测为非实体声源；脚步声节奏均匀（约0.8秒/步），无明确移动轨迹，常从走廊中段向两端扩散后消失，书写声多伴随零散粉笔灰掉落，但黑板无任何物理接触痕迹。</div>
+
+                <h3 class="subsection-title">2.2 物质异常（周期性发生）</h3>
+                <div class="list-item">触发条件：满月夜（农历十五前后3天）23:00-次日01:00</div>
+                <div class="list-item">异常表现：西教学楼4楼3间教室的黑板表面会自动浮现白色粉笔字迹，内容包括无逻辑关联的数字（如“1998”“37.2”）、符号（如“∞”“∮”）及短句（如“向南走”“不要回头”），字迹形成速度约2秒/字符，次日清晨6:00前会自然淡化50%，经基金会特制药剂擦拭后可完全清除，无残留痕迹。</div>
+                <div class="list-item">附加现象：异常书写期间，教室灯光会出现间歇性闪烁（频率约3次/分钟），电压监测显示无波动，推测与异常能量场相关。</div>
+
+                <h3 class="subsection-title">2.3 体感异常（限定区域）</h3>
+                <div class="list-item">影响区域：教学楼天台、东侧老榕树周边15米范围</div>
+                <div class="list-item">异常表现：普通人员进入该区域后，10秒内会出现“方向迷失”“莫名烦躁”“心悸”等体感，部分人员会产生模糊幻觉（如看到白色人影、听到低语），离开区域后3分钟内症状完全消失，无长期生理或心理影响；授权人员（佩戴基金会特制防护设备）进入无任何异常体感。</div>
+                <div class="list-item">能量特征：该区域可监测到微弱的异常磁场波动（强度约0.03高斯），与周边环境磁场差异显著，波动周期与满月周期同步。</div>
+
+                <h3 class="subsection-title">2.4 地点背景（墓地相关详细信息）</h3>
+                <div class="list-item"><strong>历史沿革（建校前）</strong>：海南省三亚市吉阳区落笔洞路176号地块，自清代道光年间（约1830年）起便是当地黎族及汉族居民的公共墓地，总面积约85亩，因地处城郊、地势较高且土壤干燥，成为周边村落的主要安葬区域。据地方志及基金会调查记录，该墓地累计安葬人数约1200人，墓葬形式以土坑墓、砖石墓为主，无集中棺椁存放区，墓葬分布零散，深度在1.2-3.5米之间。民国时期（1935年）曾因瘟疫爆发，该区域临时作为感染者安葬点，新增墓葬约300座，后因战乱未进行规范管理。1950年后，随着城市发展，部分墓葬被迁走，但因墓地范围广、标识模糊，仍有大量墓葬未被发现或迁移，1990年三亚市城市规划将该地块划定为教育用地，1996-1998年建校前期施工中，曾挖掘出残缺棺木、骨骼碎片及明清时期随葬品（如铜钱、瓷碗）共76件，施工单位按当时规定进行简单掩埋处理后继续施工，未上报文物或民政部门。</div>
+                <div class="list-item"><strong>异常关联推测</strong>：基金会监测数据显示，西教学楼4楼的位置恰好对应建校前墓地的核心区域（原墓葬密集区），老榕树所在地为民国时期瘟疫感染者安葬点中心位置。推测SCP-CN-7342的异常现象与未迁移墓葬的遗骸能量、历史怨念积累及地块磁场异常相关，满月夜异常强度增强的特征，符合民间“月圆之夜阴气重”的传统认知，也与异常能量场受天体引力影响的监测结果一致。</div>
+
+                <h3 class="subsection-title">2.5 谣言产生与传播详情</h3>
+                <div class="rumor-section">
+                    <div class="rumor-item">
+                        <p><strong>谣言1：“4楼女鬼教书传说”</strong></p>
+                        <p>传播内容：声称西教学楼4楼曾有一位女教师因学生作弊被举报，不堪压力在教室上吊自杀，死后魂魄滞留，夜间的脚步声和书写声是她在“继续教书”，看到白色人影的学生将面临“学业诅咒”，考试必定失利。</p>
+                        <div class="rumor-explain">产生时间：2002年（首次异常记录后2年），由当时初二学生根据夜间异常声音及施工挖出的骨骼碎片编造，后经学长学姐口耳相传逐渐丰富细节。传播渠道：校园课间闲聊、QQ群、贴吧，2015年后扩展至微信朋友圈、抖音短视频。产生原因：学生对异常现象的恐惧心理、对“死亡”的好奇与敬畏，叠加青春期学业压力，将自身考试失利等负面事件与谣言关联，强化谣言可信度。</div>
+                    </div>
+                    <div class="rumor-item">
+                        <p><strong>谣言2：“老榕树吸魂说”</strong></p>
+                        <p>传播内容：东侧老榕树是“阴树”，扎根在瘟疫死者墓地中心，满月夜会释放“阴气”吸食靠近者的“阳气”，导致人员情绪低落、精神萎靡，甚至有“靠近榕树超过10分钟会被勾魂”的极端说法，部分学生刻意绕开榕树行走。</p>
+                        <div class="rumor-explain">产生时间：2005年（首次记录满月夜异常后），由校外人员结合“墓地背景”和“体感异常”编造，后传入校园。产生原因：老榕树周边的体感异常（烦躁、心悸）被误解为“阳气被吸”，民国瘟疫安葬点的历史背景为谣言提供“恐怖素材”，学生群体对超自然现象的猎奇心理加速传播，部分学生为博眼球刻意夸大自身“不适症状”。</div>
+                    </div>
+                    <div class="rumor-item">
+                        <p><strong>谣言3：“未迁遗骸诅咒说”</strong></p>
+                        <p>传播内容：建校时未迁走的遗骸对施工破坏其安息地心怀怨恨，降下“校园诅咒”，异常现象是遗骸的“抗议”，学校实行“上12天休2天”的特殊作息，是为了在额外休息日进行“祭祀安抚”，网络卡顿是“怨气干扰信号”。</p>
+                        <div class="rumor-explain">产生时间：2010年（学校调整作息后），由毕业学生在社交平台发布。产生原因：学生对特殊作息的不解、对校园网络卡顿的不满，结合地块“墓地背景”和异常现象，将管理措施与“诅咒安抚”强行关联；部分校外SCP爱好者刻意将其与“异常收容”挂钩，编造“学校是SCP收容站点”的衍生谣言，导致谣言在网络上二次传播。</div>
+                    </div>
+                    <div class="rumor-item">
+                        <p><strong>谣言4：“粉笔字预言说”</strong></p>
+                        <p>传播内容：满月夜黑板上的异常字迹是“预言”，解读出字迹含义的人可获得“好运”，如考试满分、暗恋对象表白，但解读错误会“遭反噬”。曾有学生声称解读出“1998”是建校年份，“向南走”指向学校南门的小卖部，后因该学生考试及格，谣言可信度被进一步强化。</p>
+                        <div class="rumor-explain">产生时间：2012年，由高三学生为缓解高考压力编造。产生原因：青少年对“好运”的迫切需求，将无逻辑的异常字迹赋予“预言”属性，通过自我暗示和巧合事件（如考试及格）验证谣言，形成“越传越真”的传播效应，甚至有学生夜间冒险潜入教室“寻找预言”。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关键调查记录章节 -->
+        <div class="section">
+            <h2 class="section-title">3. 关键调查记录摘要</h2>
+            <div class="section-content">
+                <div class="list-item">1998-09-01：学校建校当日，基金会完成首批潜伏人员（含张39）部署，在西教学楼4楼、宿舍楼梯间等关键位置安装声学、电磁学监测设备，搭建加密通信网络，确立“不干预、只监测、控传播”的核心原则。</div>
+                <div class="list-item">2000-03-12 02:17：西教学楼4楼走廊监测设备首次捕捉到异常高跟鞋脚步声，持续12分37秒，声波频率为250-500Hz（符合女性高跟鞋敲击地面特征），但未监测到对应空气振动，排除人为伪造及建筑结构共振可能。</div>
+                <div class="list-item">2002-05-18：首次记录到黑板异常书写痕迹，内容为“1998”“勿扰”，同步监测到教室灯光闪烁，异常持续48分钟后自行终止，张39（在校老员工）首次使用基金会特制药剂清除字迹，验证药剂有效性。</div>
+                <div class="list-item">2005-09-15（农历八月十五）：监测到老榕树周边异常磁场波动峰值（0.05高斯），同时记录到低频嗡鸣（15-20Hz），3名不知情施工人员进入该区域后出现烦躁、心悸症状，撤离后恢复正常，基金会首次确认该区域的体感异常影响。</div>
+                <div class="list-item">2010-08-01：学校执行“上12天休2天”作息计划，基金会通过外交渠道协调教育局提供“提升教学质量”的官方解释，同步加强校园网络电磁干扰装置部署，减少异常现象相关信息外泄。</div>
+                <div class="list-item">2015-06-20：某学生夜间潜入西教学楼4楼拍摄异常脚步声视频，上传至抖音后获赞10万+，基金会启动舆情管控，24小时内删除相关视频及账号，对该学生进行心理疏导并施加记忆干预，后续强化校园夜间安保巡逻。</div>
+                <div class="list-item">2024-10-12：完成校园全域8台电磁异常干扰装置安装调试，监测数据显示异常能量扩散范围缩小60%，网络卡顿现象作为掩护措施保留，未引发师生大规模投诉。</div>
+                <div class="list-item">2025-05-28：经Site-CN-59异常项目审核委员会3轮评审，确认SCP-CN-7342异常特性稳定、管控措施有效、未造成严重危害，正式归档为EUCLID级异常项目。</div>
+            </div>
+        </div>
+
+        <!-- 风险评估与应对章节 -->
+        <div class="section">
+            <h2 class="section-title">4. 风险评估与应对预案</h2>
+            <div class="section-content">
+                <h3 class="subsection-title">4.1 风险等级：低风险（稳定型）</h3>
+                <div class="list-item">影响范围：仅限学校内部，未扩散至校外区域。</div>
+                <div class="list-item">危害程度：仅造成轻度心理不适（如恐惧、烦躁），无人员伤亡、财产损失记录。</div>
+                <div class="list-item">传播风险：校园内部及网络平台局部传播，无大规模恐慌引发的社会动荡风险。</div>
+
+                <h3 class="subsection-title">4.2 应对预案</h3>
+                <div class="list-item">舆情管控：张39（在校老员工）负责日常校园谣言监测，陈56通过教师身份引导学生理性看待异常现象，基金会舆情小组24小时监控网络平台，及时删除相关敏感内容，对扩散范围较广的谣言启动账号封禁及记忆干预程序。</div>
+                <div class="list-item">设备维护：张39每周三放学后对监测设备、声波干扰装置、电磁干扰装置进行维护检修，确保设备正常运行，物资补给由基金会通过隐蔽渠道定期送达。</div>
+                <div class="list-item">人员管理：禁止学生夜间进入西教学楼4楼及老榕树周边15米范围，通过“安全管理规定”“夜间巡逻”等方式落实管控；对不慎接触异常现象并出现严重心理不适的学生，由陈56联系基金会心理干预团队进行疏导。</div>
+                <div class="list-item">应急处置：若异常现象强度突然增强（如声音分贝超过60、异常范围扩大至校园外），立即启动“红色预案”：关闭西教学楼及老榕树区域，疏散周边人员，启用高强度电磁压制设备，李47负责现场指挥，Site-CN-59派遣支援团队2小时内抵达。</div>
+            </div>
+        </div>
+
+        <!-- 底部声明 -->
+        <div class="disclaimer">
+            <strong>基金会保密声明：</strong>本文档为SCP基金会内部异常项目调查记录，涉及的异常现象、地点、人员均为基金会机密信息。任何未经授权的访问、复制、传播行为，均违反《SCP基金会保密协议》，基金会将依法追究其法律责任。文档内容仅用于基金会内部研究及管控参考，禁止用于任何商业、娱乐及非法用途。数据完整性已通过三重加密校验，任何篡改行为将触发基金会安全警报系统。
+        </div>
+    </div>
+</body>
+</html>
